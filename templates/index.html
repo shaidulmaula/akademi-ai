@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="id" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Kognitif // Lab AI Engineering & Automations</title>
+  <meta name="description" content="Kelas praktisi AI tingkat lanjut: Jago Hermes, Autonomous Agents, Self-Hosted LLMs, n8n Automations, dan Production RAG. 100% kode nyata.">
+  <link rel="stylesheet" href="/static/css/style.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: #07080a;
+      color: #f0f2f5;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .nav-blur {
+      background-color: rgba(7, 8, 10, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#07080a] text-[#f0f2f5] antialiased selection:bg-indigo-500/30 selection:text-indigo-200 pb-24 sm:pb-10">
+
+  <!-- TOP NAV BAR -->
+  <header class="border-b border-white/[0.08] nav-blur sticky top-0 z-40">
+    <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="size-7 rounded-lg bg-gradient-to-br from-indigo-500 to-emerald-400 flex items-center justify-center text-xs font-bold font-mono text-black shadow-md shadow-indigo-500/20">
+          K
+        </div>
+        <span class="font-extrabold tracking-tight text-sm text-white">KOGNITIF<span class="text-indigo-400 font-mono">//</span>LAB</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+          <span class="size-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Batch Terdekat: {{.NextBatch}}</span>
+        </div>
+        <a href="#katalog" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-white transition-colors">
+          Pilih Kelas
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="relative pt-8 pb-12 sm:pt-16 sm:pb-16 px-4 overflow-hidden border-b border-white/[0.06]">
+    <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[550px] h-[250px] bg-indigo-600/15 rounded-full blur-[100px] pointer-events-none"></div>
+
+    <div class="max-w-3xl mx-auto text-center relative z-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs font-mono text-indigo-300 mb-5">
+        <span class="text-emerald-400">⚡</span> Hands-On AI Engineering Masterclass
+      </div>
+
+      <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-[1.18] mb-4 text-white">
+        Bangun Sistem AI Mandiri.<br>
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-emerald-400">
+          Bukan Sekadar Tanya ChatGPT.
+        </span>
+      </h1>
+
+      <p class="text-xs sm:text-base text-gray-400 leading-relaxed max-w-2xl mx-auto mb-7 font-normal">
+        Kurikulum intensif untuk engineer dan praktisi: <strong class="text-gray-200">Framework Hermes Agent</strong>, arsitektur <strong class="text-gray-200">Autonomous Agents</strong>, deploy model <strong class="text-gray-200">Self-Hosted Lokal</strong> tanpa biaya cloud, automasi operasional via <strong class="text-gray-200">n8n</strong>, dan <strong class="text-gray-200">Production RAG</strong> bebas halusinasi.
+      </p>
+
+      <!-- Key Value Badges -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 max-w-2xl mx-auto mb-7 text-left">
+        <div class="p-3 rounded-xl bg-[#0e1117] border border-white/[0.06]">
+          <div class="text-[10px] text-gray-500 font-mono">PENDEKATAN</div>
+          <div class="text-xs sm:text-sm font-bold text-white mt-0.5">100% Code-First</div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#0e1117] border border-white/[0.06]">
+          <div class="text-[10px] text-gray-500 font-mono">DURASI</div>
+          <div class="text-xs sm:text-sm font-bold text-white mt-0.5">12-16 Jam Hands-On</div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#0e1117] border border-white/[0.06]">
+          <div class="text-[10px] text-gray-500 font-mono">KUOTA BATCH</div>
+          <div class="text-xs sm:text-sm font-bold text-white mt-0.5">Maks. 15 Peserta</div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#0e1117] border border-white/[0.06]">
+          <div class="text-[10px] text-gray-500 font-mono">FASILITAS KELAS</div>
+          <div class="text-xs sm:text-sm font-bold text-white mt-0.5">Free VPS 1 Bulan</div>
+        </div>
+      </div>
+
+      <!-- Action Button Group -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a href="#katalog" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs sm:text-sm transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2">
+          <span>Lihat Silabus & Jadwal</span>
+          <span>↓</span>
+        </a>
+        <button onclick="openRegisterModal('Umum')" class="w-full sm:w-auto px-5 py-3 rounded-xl bg-[#141820] hover:bg-[#1a202c] border border-white/[0.08] text-gray-300 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2">
+          <span class="size-2 rounded-full bg-emerald-400"></span>
+          <span>Konsultasi Kurikulum via WA</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ANTI AI-SLOP MANIFESTO -->
+  <section class="py-10 px-4 max-w-4xl mx-auto border-b border-white/[0.06]">
+    <div class="text-center mb-6">
+      <span class="text-[11px] font-mono text-emerald-400 uppercase tracking-wider font-semibold">Standard Kualitas</span>
+      <h2 class="text-xl sm:text-2xl font-bold text-white mt-1">Mengapa Kelas Ini Dibuat Berbeda?</h2>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="p-4 sm:p-5 rounded-2xl bg-red-950/10 border border-red-500/20 text-left">
+        <div class="flex items-center gap-2 text-red-400 font-bold text-xs sm:text-sm mb-3">
+          <span>✕</span>
+          <span>Bukan Kursus AI Generik (AI Slop)</span>
+        </div>
+        <ul class="space-y-2 text-xs text-gray-400 leading-relaxed">
+          <li class="flex items-start gap-2">
+            <span class="text-red-400/60">•</span>
+            <span>Kumpulan prompt ChatGPT copy-paste tanpa pemahaman logika sistem.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-red-400/60">•</span>
+            <span>Janji manis tanpa dasar dan tutorial kulit luar yang tidak aplikatif.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-red-400/60">•</span>
+            <span>Slide presentasi teoretis panjang tanpa ada baris kode yang dieksekusi.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-red-400/60">•</span>
+            <span>Sangat bergantung pada API cloud mahal yang tagihannya membengkak.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="p-4 sm:p-5 rounded-2xl bg-emerald-950/10 border border-emerald-500/20 text-left">
+        <div class="flex items-center gap-2 text-emerald-400 font-bold text-xs sm:text-sm mb-3">
+          <span>✓</span>
+          <span>Standar Kognitif AI Lab</span>
+        </div>
+        <ul class="space-y-2 text-xs text-gray-300 leading-relaxed">
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-400">✓</span>
+            <span><strong>Framework Hermes Asli:</strong> Pelajari arsitektur agentic langsung dari sumber Nous Research.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-400">✓</span>
+            <span><strong>Free Cloud VPS 1 Bulan:</strong> Setiap peserta kelas Hermes mendapat instance VPS Linux aktif untuk praktik.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-400">✓</span>
+            <span><strong>Integrasi Sistem Riil:</strong> Menghubungkan LLM ke PostgreSQL, WhatsApp dan CRM.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-emerald-400">✓</span>
+            <span><strong>Source Code Siap Pakai:</strong> Bawa pulang boilerplate dan kode lab siap deploy.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- KATALOG KELAS -->
+  <section id="katalog" class="py-12 px-4 max-w-5xl mx-auto scroll-mt-16">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-7">
+      <div>
+        <span class="text-[11px] font-mono text-indigo-400 font-semibold uppercase tracking-wider">Katalog Program</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Pilih Spesialisasi AI Anda</h2>
+        <p class="text-xs sm:text-sm text-gray-400 mt-1">Setiap kelas didesain modular, interaktif, dan fokus pada satu domain spesifik.</p>
+      </div>
+
+      <!-- Category Filter Pills (Mobile Horizontal Scroll) -->
+      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+        <button onclick="filterCategory('all')" id="pill-all" class="cat-pill active px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-colors bg-indigo-600 text-white shrink-0">
+          Semua ({{len .Courses}})
+        </button>
+        <button onclick="filterCategory('hermes')" id="pill-hermes" class="cat-pill px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-colors bg-[#11141a] border border-white/[0.06] text-gray-400 hover:text-white shrink-0">
+          ✨ Jago Hermes
+        </button>
+        <button onclick="filterCategory('agents')" id="pill-agents" class="cat-pill px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-colors bg-[#11141a] border border-white/[0.06] text-gray-400 hover:text-white shrink-0">
+          🤖 AI Agents
+        </button>
+        <button onclick="filterCategory('local-llm')" id="pill-local-llm" class="cat-pill px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-colors bg-[#11141a] border border-white/[0.06] text-gray-400 hover:text-white shrink-0">
+          ⚡ Local LLMs
+        </button>
+        <button onclick="filterCategory('automation')" id="pill-automation" class="cat-pill px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-colors bg-[#11141a] border border-white/[0.06] text-gray-400 hover:text-white shrink-0">
+          🔄 Automations
+        </button>
+        <button onclick="filterCategory('rag')" id="pill-rag" class="cat-pill px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-colors bg-[#11141a] border border-white/[0.06] text-gray-400 hover:text-white shrink-0">
+          🔍 RAG
+        </button>
+      </div>
+    </div>
+
+    <!-- Course Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      {{range .Courses}}
+      <article data-category="{{.Category}}" class="course-card flex flex-col justify-between p-5 sm:p-6 rounded-2xl bg-[#0d1015] border border-white/[0.08] hover:border-white/[0.18] transition-all relative overflow-hidden group">
+        <div>
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+              {{.CategoryName}}
+            </span>
+            <div class="flex items-center gap-1.5 text-xs font-mono text-emerald-400">
+              <span class="size-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>{{.Badge}}</span>
+            </div>
+          </div>
+
+          <h3 class="text-base sm:text-lg font-bold text-white group-hover:text-indigo-300 transition-colors mb-2 leading-snug">
+            {{.Title}}
+          </h3>
+
+          <p class="text-xs sm:text-sm text-gray-400 leading-relaxed mb-4">
+            {{.Tagline}}
+          </p>
+
+          <!-- Core Curriculum Highlights -->
+          <div class="space-y-1.5 mb-5 border-t border-b border-white/[0.06] py-3">
+            {{range .Highlights}}
+            <div class="flex items-start gap-2 text-xs text-gray-300">
+              <span class="text-indigo-400 font-bold">›</span>
+              <span>{{.}}</span>
+            </div>
+            {{end}}
+          </div>
+
+          <!-- Schedule & Duration Specs -->
+          <div class="grid grid-cols-2 gap-2 text-[11px] font-mono text-gray-400 mb-5">
+            <div class="flex items-center gap-1.5">
+              <span class="text-gray-500">⏱</span>
+              <span>{{.Duration}}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-gray-500">📅</span>
+              <span>{{.StartDate}}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Price & Action Buttons -->
+        <div class="pt-4 border-t border-white/[0.06] flex items-center justify-between gap-3">
+          <div>
+            <div class="text-[11px] text-gray-500 line-through font-mono">{{.FormattedPrice}}</div>
+            <div class="text-lg sm:text-xl font-extrabold text-white font-mono leading-none mt-0.5">
+              {{.FormattedDiscount}}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="showSyllabusModal('{{.Slug}}')" class="px-3 py-2 rounded-xl bg-white/[0.05] hover:bg-white/10 text-gray-300 font-semibold text-xs transition-colors">
+              Silabus
+            </button>
+            <button onclick="openRegisterModal('{{.Slug}}')" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all shadow-md shadow-indigo-600/20">
+              Daftar
+            </button>
+          </div>
+        </div>
+      </article>
+      {{end}}
+    </div>
+  </section>
+
+  <!-- FAQ SECTION (NATIVE ACCORDION) -->
+  <section class="py-12 px-4 max-w-3xl mx-auto border-t border-white/[0.06]">
+    <div class="text-center mb-8">
+      <span class="text-[11px] font-mono text-indigo-400 font-semibold uppercase tracking-wider">Tanya Jawab</span>
+      <h2 class="text-xl sm:text-2xl font-bold text-white mt-1">Pertanyaan yang Sering Diajukan</h2>
+    </div>
+
+    <div class="space-y-3">
+      <details class="p-4 rounded-xl bg-[#0e1117] border border-white/[0.06] group cursor-pointer">
+        <summary class="flex items-center justify-between font-semibold text-xs sm:text-sm text-white list-none">
+          <span>Bagaimana cara klaim bonus Free VPS Linux 1 bulan?</span>
+          <span class="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <p class="text-xs text-gray-400 mt-3 leading-relaxed">
+          Kredensial IP, SSH root, dan akses VPS Linux langsung diberikan pada hari pertama kelas Jago Hermes. VPS aktif penuh selama 30 hari untuk keperluan deployment agent mandiri.
+        </p>
+      </details>
+
+      <details class="p-4 rounded-xl bg-[#0e1117] border border-white/[0.06] group cursor-pointer">
+        <summary class="flex items-center justify-between font-semibold text-xs sm:text-sm text-white list-none">
+          <span>Apakah saya harus punya laptop berspesifikasi GPU tinggi?</span>
+          <span class="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <p class="text-xs text-gray-400 mt-3 leading-relaxed">
+          Tidak perlu. Untuk kelas Self-Hosted LLM dan Agent, peserta menggunakan instance server lab yang disediakan. Laptop standar RAM 8GB sudah sangat cukup.
+        </p>
+      </details>
+
+      <details class="p-4 rounded-xl bg-[#0e1117] border border-white/[0.06] group cursor-pointer">
+        <summary class="flex items-center justify-between font-semibold text-xs sm:text-sm text-white list-none">
+          <span>Bagaimana jika saya berhalangan hadir saat sesi live?</span>
+          <span class="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <p class="text-xs text-gray-400 mt-3 leading-relaxed">
+          Setiap sesi direkam dalam kualitas HD dan langsung dibagikan ke portal peserta beserta seluruh source code dan repository lab pada malam yang sama. Akses rekaman berlaku seumur hidup.
+        </p>
+      </details>
+
+      <details class="p-4 rounded-xl bg-[#0e1117] border border-white/[0.06] group cursor-pointer">
+        <summary class="flex items-center justify-between font-semibold text-xs sm:text-sm text-white list-none">
+          <span>Bahasa pemrograman apa yang digunakan?</span>
+          <span class="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <p class="text-xs text-gray-400 mt-3 leading-relaxed">
+          Kami menggunakan Python, Golang, dan Shell script untuk implementasi backend dan agents, serta n8n dan PostgreSQL/Supabase untuk pipeline integrasi. Peserta dengan dasar logika pemrograman sudah bisa mengikuti dengan lancar.
+        </p>
+      </details>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="py-8 px-4 text-center border-t border-white/[0.06] text-gray-500 text-xs font-mono">
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div>© 2026 Kognitif AI Lab. Pure Engineering, Zero Slop.</div>
+      <div class="flex items-center gap-4 text-gray-400">
+        <a href="https://wa.me/6282246846944" target="_blank" class="hover:text-white transition-colors">WhatsApp Support</a>
+        <a href="#katalog" class="hover:text-white transition-colors">Katalog Kelas</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- STICKY MOBILE BOTTOM BAR -->
+  <div class="fixed bottom-0 left-0 right-0 p-3 bg-[#0c0e14]/95 backdrop-blur-md border-t border-white/[0.08] z-30 sm:hidden flex items-center justify-between gap-3">
+    <div>
+      <div class="text-[10px] text-gray-400 font-mono">Jago Hermes + VPS</div>
+      <div class="text-xs font-bold text-emerald-400 font-mono">Rp 300.000</div>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="#katalog" class="px-3 py-2 rounded-lg bg-white/10 text-white text-xs font-semibold">
+        Pilih Kelas
+      </a>
+      <button onclick="openRegisterModal('jago-hermes')" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold shadow-md shadow-indigo-600/30">
+        Daftar WA
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL DETAIL SILABUS (BOTTOM SHEET ON MOBILE) -->
+  <div id="syllabus-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden" onclick="if(event.target === this) closeSyllabusModal()">
+    <div class="fixed bottom-0 left-0 right-0 sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 bg-[#0f1218] border-t sm:border border-white/[0.1] rounded-t-3xl sm:rounded-2xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl mx-auto overflow-hidden">
+      <!-- Visible Grab Handle for Mobile -->
+      <div class="w-12 h-1.5 bg-zinc-600 rounded-full mx-auto my-2 sm:hidden"></div>
+      <div class="p-4 sm:p-5 border-b border-white/[0.06] flex items-center justify-between bg-[#121620]">
+        <div>
+          <span id="modal-category" class="text-[10px] font-mono text-indigo-400 font-bold uppercase tracking-wider">Silabus Lengkap</span>
+          <h3 id="modal-title" class="text-sm sm:text-base font-bold text-white mt-0.5 leading-snug">Judul Kelas</h3>
+        </div>
+        <button onclick="closeSyllabusModal()" class="size-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center text-sm font-mono shrink-0">
+          ✕
+        </button>
+      </div>
+
+      <!-- Content Scrollable -->
+      <div id="modal-syllabus-content" class="p-4 sm:p-5 space-y-3 overflow-y-auto flex-1 overscroll-contain"></div>
+
+      <!-- Footer Modal -->
+      <div class="p-4 border-t border-white/[0.08] bg-[#0c0e14] flex items-center justify-between gap-3 shrink-0">
+        <div>
+          <div class="text-[10px] text-gray-500 font-mono">Biaya Investasi:</div>
+          <div id="modal-price" class="text-sm sm:text-base font-bold font-mono text-emerald-400">Rp 0</div>
+        </div>
+        <button id="modal-btn-register" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/25 transition-all">
+          Daftar Kelas Ini
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL QUICK REGISTRATION (BOTTOM SHEET ON MOBILE) -->
+  <div id="register-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden" onclick="if(event.target === this) closeRegisterModal()">
+    <div class="fixed bottom-0 left-0 right-0 sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 bg-[#0f1218] border-t sm:border border-white/[0.1] rounded-t-3xl sm:rounded-2xl w-full max-w-md shadow-2xl mx-auto overflow-hidden">
+      <!-- Visible Grab Handle for Mobile -->
+      <div class="w-12 h-1.5 bg-zinc-600 rounded-full mx-auto my-2 sm:hidden"></div>
+      <div class="p-4 sm:p-5 border-b border-white/[0.06] flex items-center justify-between bg-[#121620]">
+        <div>
+          <span class="text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wider">Pendaftaran Cepat</span>
+          <h3 class="text-sm sm:text-base font-bold text-white mt-0.5">Amankan Slot Batch Anda</h3>
+        </div>
+        <button onclick="closeRegisterModal()" class="size-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center text-sm font-mono">
+          ✕
+        </button>
+      </div>
+
+      <form id="reg-form" onsubmit="handleRegistration(event)" class="p-4 sm:p-5 space-y-3">
+        <div>
+          <label class="block text-[11px] font-mono text-gray-400 mb-1">Nama Lengkap *</label>
+          <input type="text" id="reg-name" required placeholder="Nama Anda" class="w-full px-3 py-2 bg-[#090b0e] border border-white/[0.08] focus:border-indigo-500 rounded-lg text-xs text-white outline-none">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-mono text-gray-400 mb-1">No. WhatsApp Aktif *</label>
+          <input type="tel" id="reg-wa" inputmode="numeric" required placeholder="08xxxxxxxxxx" class="w-full px-3 py-2 bg-[#090b0e] border border-white/[0.08] focus:border-indigo-500 rounded-lg text-xs text-white outline-none">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-mono text-gray-400 mb-1">Pilihan Kelas *</label>
+          <select id="reg-course" required class="w-full px-3 py-2 bg-[#090b0e] border border-white/[0.08] focus:border-indigo-500 rounded-lg text-xs text-white outline-none">
+            {{range .Courses}}
+            <option value="{{.Slug}}">{{.FormattedDiscount}} • {{.Title}}</option>
+            {{end}}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-mono text-gray-400 mb-1">Catatan / Harapan Belajar</label>
+          <textarea id="reg-notes" rows="2" placeholder="Misal: Kebutuhan integrasi agent kantor" class="w-full px-3 py-2 bg-[#090b0e] border border-white/[0.08] focus:border-indigo-500 rounded-lg text-xs text-white outline-none resize-none"></textarea>
+        </div>
+
+        <div id="reg-alert" class="hidden text-xs p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"></div>
+
+        <button type="submit" id="reg-submit-btn" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2">
+          <span>Kirim & Lanjut ke WhatsApp</span>
+          <span class="font-mono">→</span>
+        </button>
+
+        <p class="text-[10px] text-gray-500 text-center font-mono pb-1">
+          🔒 Data aman & otomatis diteruskan ke WhatsApp Admin resmi.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCRIPT CLIENT LOGIC -->
+  <script>
+    const coursesData = {{.Courses | toJSON}};
+
+    function filterCategory(cat) {
+      document.querySelectorAll('.cat-pill').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.add('bg-[#11141a]', 'border', 'border-white/[0.06]', 'text-gray-400');
+      });
+      const activeBtn = document.getElementById('pill-' + cat);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-[#11141a]', 'border', 'border-white/[0.06]', 'text-gray-400');
+        activeBtn.classList.add('bg-indigo-600', 'text-white');
+      }
+
+      document.querySelectorAll('.course-card').forEach(card => {
+        if (cat === 'all' || card.getAttribute('data-category') === cat) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function showSyllabusModal(slug) {
+      const course = coursesData.find(c => c.slug === slug);
+      if (!course) return;
+
+      document.getElementById('modal-title').textContent = course.title;
+      document.getElementById('modal-category').textContent = course.category_name + ' • ' + course.duration;
+      document.getElementById('modal-price').textContent = 'Rp ' + course.discount_price.toLocaleString('id-ID');
+
+      const content = document.getElementById('modal-syllabus-content');
+      content.innerHTML = course.syllabus.map(m => `
+        <div class="p-3 rounded-xl bg-[#141720] border border-white/[0.06]">
+          <div class="text-[10px] font-mono text-indigo-400 font-bold uppercase tracking-wider">${m.day}</div>
+          <div class="text-xs font-bold text-white mt-0.5 mb-1">${m.title}</div>
+          <div class="text-[11px] text-gray-400 leading-relaxed">${m.desc}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('modal-btn-register').onclick = function() {
+        closeSyllabusModal();
+        openRegisterModal(slug);
+      };
+
+      const m = document.getElementById('syllabus-modal');
+      m.classList.remove('hidden');
+      m.style.display = 'flex';
+    }
+
+    function closeSyllabusModal() {
+      const m = document.getElementById('syllabus-modal');
+      m.classList.add('hidden');
+      m.style.display = 'none';
+    }
+
+    function openRegisterModal(slug) {
+      const select = document.getElementById('reg-course');
+      if (slug && slug !== 'Umum') {
+        select.value = slug;
+      }
+      document.getElementById('reg-alert').classList.add('hidden');
+      const m = document.getElementById('register-modal');
+      m.classList.remove('hidden');
+      m.style.display = 'flex';
+    }
+
+    function closeRegisterModal() {
+      const m = document.getElementById('register-modal');
+      m.classList.add('hidden');
+      m.style.display = 'none';
+    }
+
+    async function handleRegistration(e) {
+      e.preventDefault();
+      const btn = document.getElementById('reg-submit-btn');
+      const alert = document.getElementById('reg-alert');
+
+      const payload = {
+        name: document.getElementById('reg-name').value,
+        whatsapp: document.getElementById('reg-wa').value,
+        course_slug: document.getElementById('reg-course').value,
+        notes: document.getElementById('reg-notes').value
+      };
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>Mencatat Pendaftaran...</span>';
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        const targetUrl = data.redirect_url || data.wa_url;
+
+        if (data.success && targetUrl) {
+          alert.textContent = 'Invoice berhasil dibuat! Mengalihkan ke instruksi pembayaran...';
+          alert.classList.remove('hidden');
+          setTimeout(() => {
+            window.location.href = targetUrl;
+          }, 300);
+        } else {
+          alert.textContent = data.error || 'Terjadi kendala, mohon periksa input dan coba kembali.';
+          alert.classList.remove('hidden');
+          btn.disabled = false;
+          btn.innerHTML = '<span>Kirim & Lanjut ke Pembayaran</span> <span class="font-mono">→</span>';
+        }
+      } catch (err) {
+        alert.textContent = 'Gagal memproses pendaftaran. Hubungi kami via WhatsApp.';
+        alert.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = '<span>Kirim & Lanjut ke Pembayaran</span> <span class="font-mono">→</span>';
+      }
+    }
+  </script>
+</body>
+</html>

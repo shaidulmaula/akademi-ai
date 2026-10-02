@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-base: #07080a;
+  --color-bg-surface: #0e1116;
+  --color-bg-elevated: #151921;
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.16);
+  --color-accent-emerald: #10b981;
+  --color-accent-indigo: #6366f1;
+  --color-text-main: #f0f2f5;
+  --color-text-muted: #848d97;
+}
+
+/* Custom micro-interactions and scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #07080a;
+}
+::-webkit-scrollbar-thumb {
+  background: #212631;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #30363d;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Touch mobile tap highlight reset */
+* {
+  -webkit-tap-highlight-color: transparent;
+}

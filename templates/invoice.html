@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Instruksi Pembayaran • {{.Order.OrderID}}</title>
+  <link rel="stylesheet" href="/static/css/style.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: #07080a;
+      color: #f0f2f5;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#07080a] text-[#f0f2f5] antialiased selection:bg-indigo-500/30 selection:text-indigo-200 py-6 px-4">
+
+  <div class="max-w-md mx-auto space-y-4">
+    
+    <!-- Top Nav / Back -->
+    <div class="flex items-center justify-between pb-2 border-b border-white/[0.08]">
+      <a href="/" class="flex items-center gap-2 text-xs text-gray-400 hover:text-white transition-colors">
+        <span>←</span>
+        <span>Kembali ke Beranda</span>
+      </a>
+      <div class="flex items-center gap-1.5 font-mono text-[11px] text-gray-500">
+        <span>Invoice:</span>
+        <span class="text-white font-bold">{{.Order.OrderID}}</span>
+      </div>
+    </div>
+
+    <!-- Main Payment Card -->
+    <div class="p-5 rounded-2xl bg-[#0d1016] border border-white/[0.08] shadow-xl relative overflow-hidden">
+      
+      <!-- Status Badge -->
+      <div class="flex items-center justify-between gap-2 mb-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-indigo-400 font-bold">
+          Instruksi Pembayaran
+        </span>
+        {{if eq .Order.Status "proof_uploaded"}}
+        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+          <span class="size-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Menunggu Verifikasi</span>
+        </span>
+        {{else}}
+        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1">
+          <span class="size-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+          <span>Menunggu Transfer</span>
+        </span>
+        {{end}}
+      </div>
+
+      <!-- Course & Buyer Info -->
+      <div class="mb-5 pb-4 border-b border-white/[0.06]">
+        <h1 class="text-base font-bold text-white leading-snug">{{.Course.Title}}</h1>
+        <div class="mt-1 text-xs text-gray-400 font-mono flex items-center gap-2">
+          <span>Peserta: <strong class="text-gray-200">{{.Order.Name}}</strong></span>
+          <span>•</span>
+          <span>{{.Order.WhatsApp}}</span>
+        </div>
+      </div>
+
+      <!-- TOTAL TRANSFER BOX (BIG FONT & COPY) -->
+      <div class="p-4 rounded-xl bg-[#131722] border border-indigo-500/30 text-center mb-5 relative">
+        <div class="text-[11px] font-mono text-gray-400 uppercase tracking-wider">
+          Total yang Harus Ditransfer
+        </div>
+        <div class="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono tracking-tight my-1.5">
+          {{.FormattedTotal}}
+        </div>
+
+        <button onclick="copyToClipboard('{{.Order.TotalAmount}}', 'Nominal berhasil disalin!')" class="mt-2.5 px-4 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 text-xs font-semibold font-mono transition-colors flex items-center justify-center gap-1.5 mx-auto">
+          <span>📋</span>
+          <span id="btn-copy-amount-text">Salin Nominal Transfer</span>
+        </button>
+      </div>
+
+      <!-- REKENING TUJUAN TRANSFER -->
+      <div class="space-y-3 mb-5">
+        <div class="text-xs font-mono text-gray-400 uppercase tracking-wider font-semibold">
+          Rekening Tujuan Pembayaran
+        </div>
+
+        <div class="p-4 rounded-xl bg-[#090b0e] border border-white/[0.08] flex items-center justify-between gap-3">
+          <div>
+            <div class="text-xs font-bold text-white flex items-center gap-2">
+              <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-mono">BSI</span>
+              <span>Bank Syariah Indonesia</span>
+            </div>
+            <div class="text-lg font-extrabold font-mono text-white tracking-wider mt-1 select-all">
+              7150150803
+            </div>
+            <div class="text-[11px] text-gray-400 font-mono mt-0.5">
+              Atas Nama: <strong class="text-gray-200">SHAIDUL MAULA</strong>
+            </div>
+          </div>
+
+          <button onclick="copyToClipboard('7150150803', 'No. Rekening berhasil disalin!')" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-mono font-semibold transition-colors shrink-0">
+            Salin
+          </button>
+        </div>
+      </div>
+
+      <!-- FORM UPLOAD BUKTI TRANSFER -->
+      <div class="pt-4 border-t border-white/[0.06] space-y-3">
+        <div class="text-xs font-mono text-gray-400 uppercase tracking-wider font-semibold flex items-center justify-between">
+          <span>Konfirmasi Pembayaran</span>
+          <span class="text-[10px] text-emerald-400">Verifikasi Cepat</span>
+        </div>
+
+        {{if eq .Order.Status "proof_uploaded"}}
+        <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-2">
+          <div class="text-emerald-400 text-sm font-bold flex items-center justify-center gap-1.5">
+            <span>✅</span> Bukti Transfer Berhasil Diunggah!
+          </div>
+          <p class="text-xs text-gray-300 leading-relaxed">
+            Notifikasi telah dikirimkan ke Admin. Tim kami sedang memverifikasi pembayaran Anda di mutasi rekening. Anda akan segera dihubungi via WhatsApp.
+          </p>
+        </div>
+        {{else}}
+        <form id="proof-form" onsubmit="handleUploadProof(event)" class="space-y-3">
+          <input type="hidden" name="order_id" value="{{.Order.OrderID}}">
+          
+          <div>
+            <label class="block text-[11px] font-mono text-gray-400 mb-1.5">
+              Unggah Foto Struk / Screenshot Transfer:
+            </label>
+            <input type="file" id="proof-file" name="proof" accept="image/*" required class="w-full text-xs text-gray-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600/30 file:text-indigo-200 hover:file:bg-indigo-600/40 bg-[#090b0e] border border-white/[0.08] rounded-xl p-2 cursor-pointer">
+          </div>
+
+          <div id="upload-status" class="hidden text-xs p-2.5 rounded-lg"></div>
+
+          <button type="submit" id="btn-submit-proof" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2">
+            <span>Kirim Bukti Transfer</span>
+            <span>↑</span>
+          </button>
+        </form>
+        {{end}}
+
+        <!-- Backup WhatsApp Action Button -->
+        <div class="pt-2 text-center">
+          <a href="{{.WhatsAppURL}}" target="_blank" class="w-full py-2.5 px-4 rounded-xl bg-[#141820] hover:bg-[#1a202c] border border-white/[0.08] text-gray-300 hover:text-white font-semibold text-xs transition-all flex items-center justify-center gap-2">
+            <span class="size-2 rounded-full bg-emerald-400"></span>
+            <span>Konfirmasi / Kirim Bukti via WhatsApp</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Security & Contact Note -->
+    <div class="text-center text-[10px] text-gray-500 font-mono space-y-1">
+      <div>🔒 Pembayaran langsung ke rekening resmi pengajar. Bebas biaya admin platform.</div>
+      <div>Butuh bantuan? Hubungi WhatsApp resmi: <strong>0822-4684-6944</strong></div>
+    </div>
+
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#161a23] border border-white/20 text-white text-xs px-4 py-2 rounded-xl shadow-2xl transition-opacity duration-300 opacity-0 pointer-events-none font-mono"></div>
+
+  <script>
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 2500);
+    }
+
+    function copyToClipboard(text, successMsg) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(successMsg);
+      }).catch(() => {
+        prompt('Salin teks berikut:', text);
+      });
+    }
+
+    async function handleUploadProof(e) {
+      e.preventDefault();
+      const form = document.getElementById('proof-form');
+      const fileInput = document.getElementById('proof-file');
+      const btn = document.getElementById('btn-submit-proof');
+      const statusBox = document.getElementById('upload-status');
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Pilih foto bukti transfer terlebih dahulu');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>Mengunggah Bukti...</span>';
+
+      const formData = new FormData(form);
+
+      try {
+        const res = await fetch('/api/upload-proof', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          statusBox.className = 'text-xs p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 block';
+          statusBox.innerHTML = '✅ <strong>Bukti berhasil terkirim!</strong> Halaman akan memuat status terbaru...';
+          setTimeout(() => {
+            window.location.reload();
+          }, 1200);
+        } else {
+          statusBox.className = 'text-xs p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 block';
+          statusBox.textContent = data.error || 'Gagal mengunggah bukti, silakan kirim via WhatsApp.';
+          btn.disabled = false;
+          btn.innerHTML = '<span>Kirim Bukti Transfer</span> <span>↑</span>';
+        }
+      } catch (err) {
+        statusBox.className = 'text-xs p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 block';
+        statusBox.textContent = 'Koneksi terganggu. Silakan kirim langsung via tombol WhatsApp di bawah.';
+        btn.disabled = false;
+        btn.innerHTML = '<span>Kirim Bukti Transfer</span> <span>↑</span>';
+      }
+    }
+  </script>
+</body>
+</html>
