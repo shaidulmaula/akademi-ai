@@ -12,6 +12,7 @@ import (
 	"io"
 	"log"
 	"mime/multipart"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -66,6 +67,9 @@ type Lead struct {
 	TotalAmount int    `json:"total_amount"`
 	Status      string `json:"status"`
 	ProofFile   string `json:"proof_file"`
+	Device      string `json:"device"`
+	IPAddress   string `json:"ip_address"`
+	UserAgent   string `json:"user_agent"`
 	CreatedAt   string `json:"created_at"`
 }
 
@@ -85,6 +89,21 @@ var (
 	db        *sql.DB
 	tpl       *template.Template
 	uploadDir string
+
+	// Fast Telegram client forcing IPv4 priority with strict timeouts
+	telegramClient = &http.Client{
+		Timeout: 8 * time.Second,
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   3 * time.Second,
+				KeepAlive: 30 * time.Second,
+				DualStack: false, // Prevents hanging on unreachable IPv6
+			}).DialContext,
+			TLSHandshakeTimeout: 3 * time.Second,
+			MaxIdleConns:        5,
+			IdleConnTimeout:     30 * time.Second,
+		},
+	}
 )
 
 func formatRupiah(amount int) string {
@@ -111,13 +130,81 @@ func generateOrderID() string {
 	return fmt.Sprintf("KOG-%02d%02d-%s", now.Year()%100, now.Month(), strings.ToUpper(hex.EncodeToString(b)))
 }
 
+func parseDevice(ua string) string {
+	if ua == "" {
+		return "Tidak terdeteksi"
+	}
+	uaLower := strings.ToLower(ua)
+	device := "Desktop PC"
+
+	if strings.Contains(uaLower, "iphone") {
+		device = "iPhone"
+	} else if strings.Contains(uaLower, "ipad") {
+		device = "iPad"
+	} else if strings.Contains(uaLower, "android") {
+		device = "Android"
+		if strings.Contains(uaLower, "samsung") {
+			device = "Samsung Galaxy"
+		} else if strings.Contains(uaLower, "xiaomi") || strings.Contains(uaLower, "redmi") || strings.Contains(uaLower, "poco") {
+			device = "Xiaomi / Redmi"
+		} else if strings.Contains(uaLower, "oppo") {
+			device = "Oppo"
+		} else if strings.Contains(uaLower, "vivo") {
+			device = "Vivo"
+		} else if strings.Contains(uaLower, "realme") {
+			device = "Realme"
+		}
+	} else if strings.Contains(uaLower, "macintosh") || strings.Contains(uaLower, "mac os x") {
+		device = "MacBook / Mac"
+	} else if strings.Contains(uaLower, "windows") {
+		device = "Windows PC"
+	} else if strings.Contains(uaLower, "linux") {
+		device = "Linux PC"
+	}
+
+	browser := ""
+	if strings.Contains(uaLower, "edg/") {
+		browser = "Edge"
+	} else if strings.Contains(uaLower, "opr/") || strings.Contains(uaLower, "opera") {
+		browser = "Opera"
+	} else if strings.Contains(uaLower, "firefox") {
+		browser = "Firefox"
+	} else if strings.Contains(uaLower, "chrome") {
+		browser = "Chrome"
+	} else if strings.Contains(uaLower, "safari") {
+		browser = "Safari"
+	}
+
+	if browser != "" {
+		return fmt.Sprintf("%s (%s)", device, browser)
+	}
+	return device
+}
+
+func getClientIP(r *http.Request) string {
+	if cfIP := r.Header.Get("CF-Connecting-IP"); cfIP != "" {
+		return cfIP
+	}
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		parts := strings.Split(xff, ",")
+		return strings.TrimSpace(parts[0])
+	}
+	if xReal := r.Header.Get("X-Real-IP"); xReal != "" {
+		return xReal
+	}
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err == nil {
+		return ip
+	}
+	return r.RemoteAddr
+}
+
 func initDB() {
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
 		dbPath = "courses.db"
 	}
 
-	// Ensure parent directory exists
 	if dir := filepath.Dir(dbPath); dir != "." && dir != "" {
 		os.MkdirAll(dir, 0755)
 	}
@@ -163,12 +250,20 @@ func initDB() {
 		total_amount INTEGER NOT NULL DEFAULT 0,
 		status TEXT NOT NULL DEFAULT 'pending',
 		proof_file TEXT,
+		device TEXT,
+		ip_address TEXT,
+		user_agent TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	);
 	`
 	if _, err := db.Exec(createTableSQL); err != nil {
 		log.Fatalf("Gagal inisialisasi tabel: %v", err)
 	}
+
+	// Migration: add missing columns if upgrading existing table
+	db.Exec("ALTER TABLE leads ADD COLUMN device TEXT;")
+	db.Exec("ALTER TABLE leads ADD COLUMN ip_address TEXT;")
+	db.Exec("ALTER TABLE leads ADD COLUMN user_agent TEXT;")
 
 	seedOrUpdateCourses()
 }
@@ -388,6 +483,7 @@ func getTelegramCredentials() (string, string) {
 func sendTelegramNewOrderAlert(lead Lead, course Course) {
 	token, chatID := getTelegramCredentials()
 	if token == "" || chatID == "" {
+		log.Println("[TELEGRAM] Alert skipped: token or chatID missing")
 		return
 	}
 
@@ -397,12 +493,15 @@ func sendTelegramNewOrderAlert(lead Lead, course Course) {
 			"🏷 *Order ID:* `%s`\n"+
 			"👤 *Nama:* %s\n"+
 			"📱 *WhatsApp:* `%s`\n"+
+			"💻 *Perangkat:* %s\n"+
+			"🌐 *IP:* `%s`\n"+
 			"💵 *Total Tagihan:* *%s*\n"+
 			"🏦 *Rekening:* BSI `7150150803` a.n SHAIDUL MAULA\n"+
 			"📝 *Catatan:* %s\n"+
 			"⏰ *Waktu:* %s WIB\n\n"+
 			"Status: Menunggu transfer dari peserta.",
 		course.Title, lead.OrderID, lead.Name, lead.WhatsApp,
+		lead.Device, lead.IPAddress,
 		formatRupiah(lead.TotalAmount), lead.Notes, time.Now().Format("02 Jan 2006, 15:04"),
 	)
 
@@ -414,10 +513,13 @@ func sendTelegramNewOrderAlert(lead Lead, course Course) {
 
 	go func() {
 		apiURL := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", token)
-		resp, err := http.Post(apiURL, "application/json", bytes.NewBuffer(payload))
-		if err == nil && resp != nil {
-			resp.Body.Close()
+		resp, err := telegramClient.Post(apiURL, "application/json", bytes.NewBuffer(payload))
+		if err != nil {
+			log.Printf("[TELEGRAM] Error sending order alert: %v", err)
+			return
 		}
+		defer resp.Body.Close()
+		log.Printf("[TELEGRAM] Order alert delivered for %s (Status: %d)", lead.OrderID, resp.StatusCode)
 	}()
 }
 
@@ -444,11 +546,14 @@ func sendTelegramProofPhoto(lead Lead, course Course, filePath string) error {
 			"🏷 *Order ID:* `%s`\n"+
 			"👤 *Nama:* %s\n"+
 			"📱 *WhatsApp:* `%s`\n"+
+			"💻 *Perangkat:* %s\n"+
+			"🌐 *IP:* `%s`\n"+
 			"💵 *Nominal:* *%s*\n"+
 			"🏦 *Tujuan:* BSI `7150150803` (a.n SHAIDUL MAULA)\n"+
 			"⏰ *Waktu Upload:* %s WIB\n\n"+
 			"Mohon periksa mutasi BSI Mobile Anda.",
 		course.Title, lead.OrderID, lead.Name, lead.WhatsApp,
+		lead.Device, lead.IPAddress,
 		formatRupiah(lead.TotalAmount), time.Now().Format("02 Jan 2006, 15:04"),
 	)
 	writer.WriteField("caption", caption)
@@ -468,8 +573,7 @@ func sendTelegramProofPhoto(lead Lead, course Course, filePath string) error {
 	}
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
-	client := &http.Client{Timeout: 20 * time.Second}
-	resp, err := client.Do(req)
+	resp, err := telegramClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -480,6 +584,7 @@ func sendTelegramProofPhoto(lead Lead, course Course, filePath string) error {
 		return fmt.Errorf("telegram sendPhoto error: HTTP %d %s", resp.StatusCode, string(respBytes))
 	}
 
+	log.Printf("[TELEGRAM] Proof photo delivered for %s (Status: %d)", lead.OrderID, resp.StatusCode)
 	return nil
 }
 
@@ -606,6 +711,11 @@ func main() {
 			return
 		}
 
+		// Capture device, IP, and user-agent
+		lead.UserAgent = r.Header.Get("User-Agent")
+		lead.Device = parseDevice(lead.UserAgent)
+		lead.IPAddress = getClientIP(r)
+
 		var course Course
 		err := db.QueryRow("SELECT id, slug, title, discount_price FROM courses WHERE slug = ?", lead.CourseSlug).
 			Scan(&course.ID, &course.Slug, &course.Title, &course.DiscountPrice)
@@ -623,8 +733,8 @@ func main() {
 		lead.Status = "pending"
 
 		_, err = db.Exec(
-			"INSERT INTO leads (order_id, course_id, course_slug, name, whatsapp, email, notes, amount, unique_code, total_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-			lead.OrderID, lead.CourseID, lead.CourseSlug, lead.Name, lead.WhatsApp, lead.Email, lead.Notes, lead.Amount, lead.UniqueCode, lead.TotalAmount, lead.Status,
+			"INSERT INTO leads (order_id, course_id, course_slug, name, whatsapp, email, notes, amount, unique_code, total_amount, status, device, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			lead.OrderID, lead.CourseID, lead.CourseSlug, lead.Name, lead.WhatsApp, lead.Email, lead.Notes, lead.Amount, lead.UniqueCode, lead.TotalAmount, lead.Status, lead.Device, lead.IPAddress, lead.UserAgent,
 		)
 		if err != nil {
 			log.Printf("Error saving lead: %v", err)
@@ -632,6 +742,7 @@ func main() {
 			return
 		}
 
+		// Instant Telegram alert with IPv4 dialer & device info
 		sendTelegramNewOrderAlert(lead, course)
 
 		invoiceURL := "/invoice/" + lead.OrderID
@@ -673,9 +784,9 @@ func main() {
 
 		var lead Lead
 		err = db.QueryRow(
-			"SELECT id, order_id, course_id, course_slug, name, whatsapp, total_amount, unique_code FROM leads WHERE order_id = ?",
+			"SELECT id, order_id, course_id, course_slug, name, whatsapp, total_amount, unique_code, COALESCE(device, ''), COALESCE(ip_address, '') FROM leads WHERE order_id = ?",
 			orderID,
-		).Scan(&lead.ID, &lead.OrderID, &lead.CourseID, &lead.CourseSlug, &lead.Name, &lead.WhatsApp, &lead.TotalAmount, &lead.UniqueCode)
+		).Scan(&lead.ID, &lead.OrderID, &lead.CourseID, &lead.CourseSlug, &lead.Name, &lead.WhatsApp, &lead.TotalAmount, &lead.UniqueCode, &lead.Device, &lead.IPAddress)
 		if err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotFound)
